@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALPAR – Safe Route Planning and Route Justification for Mission-Critical Systems</title>
+<meta name="description" content="CMPE 491 Senior Design Project: agentic AI based safe route planning with explainable route choice for UAVs and UGVs.">
+<style>
+:root{--ink:#1a2327;--soft:#51606a;--line:#d5dce0;--accent:#1d5fbf;--bg:#fafbfb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.65 Georgia,"Times New Roman",serif}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--line);font:500 15px/1.4 Arial,Helvetica,sans-serif}
+nav .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;padding-top:14px;padding-bottom:14px}
+nav b{margin-right:auto}
+nav a{color:var(--ink);text-decoration:none}
+nav a:hover{text-decoration:underline}
+header{padding:56px 0 32px}
+h1{font:700 clamp(28px,4.5vw,42px)/1.15 Arial,Helvetica,sans-serif;margin:0 0 12px}
+.sub{color:var(--soft);font:500 16px/1.5 Arial,Helvetica,sans-serif;margin:0}
+section{padding:36px 0;border-top:1px solid var(--line)}
+h2{font:700 24px/1.2 Arial,Helvetica,sans-serif;margin:0 0 16px}
+p{margin:0 0 16px;max-width:68ch}
+ul{margin:0;padding-left:20px}
+li{margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+th{font:700 14px Arial,Helvetica,sans-serif;color:var(--soft)}
+.muted{color:var(--soft)}
+.scroll{overflow-x:auto}
+footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--soft);font:14px Arial,Helvetica,sans-serif}
+</style>
+</head>
+<body>
+<nav aria-label="Main"><div class="wrap">
+<b>ALPAR</b><a href="#description">Description</a><a href="#team">Team</a><a href="#reports">Reports</a><a href="#backlog">Backlog</a>
+</div></nav>
+
+<main class="wrap">
+<header>
+<h1>Safe Route Planning and Route Justification for Mission-Critical Systems</h1>
+<p class="sub">Team ALPAR (Agent-Based Limit-Aware Planning and Adaptive Routing) · CMPE 491 Senior Design Project I · Fall 2026-2027</p>
+</header>
+
+<section id="description">
+<h2>Project description</h2>
+<p>Mission-critical systems such as unmanned aerial vehicles (UAVs) and unmanned ground vehicles (UGVs) operate in uncertain and constantly changing field conditions. Classic route planning algorithms compute a route once under static assumptions, so they fall short when a new obstacle appears, communication is lost, or the energy budget shrinks.</p>
+<p>This project develops an agentic AI based decision and planning architecture that replans safely and instantly when conditions change. It also reports why the chosen route was preferred over its alternatives, using a language model, so that operators can trust the system's decisions. The expected contributions are real-time replanning in crisis scenarios (risk exposure, no-go zone violations), explainable AI for route choice, and dynamic weighting based on a safe energy reserve and uninterrupted communication quality.</p>
+</section>
+
+<section id="team">
+<h2>Team</h2>
+<ul>
+<li>Beren Özbek</li>
+<li>Bernur Giraz</li>
+<li>Nehir Oymak</li>
+</ul>
+<h2 style="margin-top:28px">Supervisor and jury</h2>
+<ul>
+<li>Supervisor: <span class="muted">[Supervisor name]</span></li>
+<li>Jury member 1: <span class="muted">[Jury member name]</span></li>
+<li>Jury member 2: <span class="muted">[Jury member name]</span></li>
+</ul>
+</section>
+
+<section id="reports">
+<h2>Reports</h2>
+<div class="scroll"><table>
+<thead><tr><th>Report</th><th>Due</th><th>File</th></tr></thead>
+<tbody>
+<tr><td>Project Proposal</td><td>16.10.2026</td><td><a href="reports/proposal.pdf">PDF</a></td></tr>
+<tr><td>Project Specifications Report</td><td>23.10.2026</td><td class="muted">Not yet available</td></tr>
+<tr><td>Analysis Report</td><td>20.11.2026</td><td class="muted">Not yet available</td></tr>
+<tr><td>High-Level Design Report</td><td>31.12.2026</td><td class="muted">Not yet available</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="backlog">
+<h2>TODO / Backlog</h2>
+<div class="scroll"><table>
+<thead><tr><th>Version</th><th>Due</th><th>File</th></tr></thead>
+<tbody>
+<tr><td>Backlog v1</td><td>23.10.2026</td><td class="muted">Not yet available</td></tr>
+<tr><td>Backlog v2</td><td>20.11.2026</td><td class="muted">Not yet available</td></tr>
+<tr><td>Backlog v3</td><td>31.12.2026</td><td class="muted">Not yet available</td></tr>
+</tbody></table></div>
+</section>
+</main>
+
+<footer><div class="wrap">TED University · CMPE 491 Senior Design Project I · Fall 2026-2027</div></footer>
+</body>
+</html>
