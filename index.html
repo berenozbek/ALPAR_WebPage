@@ -2,93 +2,336 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ALPAR – Safe Route Planning and Route Justification for Mission-Critical Systems</title>
 <meta name="description" content="CMPE 491 Senior Design Project: agentic AI based safe route planning with explainable route choice for UAVs and UGVs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#1a2327;--soft:#51606a;--line:#d5dce0;--accent:#1d5fbf;--bg:#fafbfb}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.65 Georgia,"Times New Roman",serif}
-a{color:var(--accent)}
-:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.wrap{max-width:1300px;margin:0 auto;padding:0 32px}
-nav{border-bottom:1px solid var(--line);font:500 15px/1.4 Arial,Helvetica,sans-serif}
-nav .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;padding-top:14px;padding-bottom:14px}
-nav b{margin-right:auto}
-nav a{color:var(--ink);text-decoration:none}
-nav a:hover{text-decoration:underline}
-header{padding:56px 0 32px}
-h1{font:700 clamp(28px,4.5vw,42px)/1.15 Arial,Helvetica,sans-serif;margin:0 0 12px}
-.sub{color:var(--soft);font:500 16px/1.5 Arial,Helvetica,sans-serif;margin:0}
-section{padding:36px 0;border-top:1px solid var(--line)}
-h2{font:700 24px/1.2 Arial,Helvetica,sans-serif;margin:0 0 16px}
-p{margin:0 0 16px;max-width:none}
-ul{margin:0;padding-left:20px}
-li{margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-size:16px}
-th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
-th{font:700 14px Arial,Helvetica,sans-serif;color:var(--soft)}
-.muted{color:var(--soft)}
-.scroll{overflow-x:auto}
-footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--soft);font:14px Arial,Helvetica,sans-serif}
+:root{
+  --paper:#F2F5F4; --surface:#FFFFFF; --ink:#1C2836; --muted:#5B6878; --line:#D3DBDF;
+  --grid:#E1E7E9; --contour:#C7D2D6;
+  --route:#C98A00; --route-old:#8C98A5; --nogo:#B5452F; --comm:#2A7F86;
+  --next-bg:#FFF4D6;
+  --head:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0F1822; --surface:#16212D; --ink:#DCE4EC; --muted:#93A1B1; --line:#2A3846;
+    --grid:#1A2632; --contour:#26394A;
+    --route:#F0B43C; --route-old:#6B7888; --nogo:#E0684F; --comm:#4FB3BA;
+    --next-bg:#2E2814;
+    color-scheme:dark;
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth; scroll-padding-top:calc(4.5rem + env(safe-area-inset-top,0px))}
+body{margin:0; background:var(--paper); color:var(--ink); font:400 1.0625rem/1.6 var(--body); -webkit-font-smoothing:antialiased}
+a{color:var(--comm); text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--route); outline-offset:3px; border-radius:2px}
+h1,h2,h3{font-family:var(--head); line-height:1.15; margin:0}
+.wrap{max-width:68rem; margin:0 auto; padding:0 1.5rem}
+
+/* Nav */
+.nav{position:sticky; top:0; z-index:10; background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px); margin-top:calc(-1 * env(safe-area-inset-top,0px))}
+.nav .wrap{display:flex; align-items:center; justify-content:space-between; height:3.75rem; gap:1rem}
+.brand{font:700 1.4rem/1 var(--head); letter-spacing:.06em; color:var(--ink); text-decoration:none}
+.nav ul{display:flex; gap:1.5rem; list-style:none; margin:0; padding:0}
+.nav ul a{color:var(--muted); text-decoration:none; font-weight:600; font-size:.98rem}
+.nav ul a:hover{color:var(--ink)}
+@media (max-width:560px){ .nav ul{gap:1rem} .nav ul a{font-size:.9rem} }
+
+/* Hero */
+.hero{padding:3.5rem 0 3rem; border-bottom:1px solid var(--line)}
+.hero .wrap{display:grid; grid-template-columns:1fr 1.05fr; gap:3rem; align-items:center}
+.hero h1{font-size:clamp(2rem,4.2vw,3.1rem); font-weight:700; letter-spacing:-.005em; max-width:16ch}
+.hero .lede{color:var(--muted); margin:1.25rem 0 0; max-width:42ch}
+.hero .lede strong{color:var(--ink); font-weight:600}
+.hero .actions{margin-top:1.75rem; display:flex; gap:.75rem; flex-wrap:wrap}
+.btn{display:inline-block; padding:.6rem 1.1rem; border-radius:6px; font-weight:600; text-decoration:none; font-size:.98rem}
+.btn-primary{background:var(--ink); color:var(--paper)}
+.btn-ghost{border:1px solid var(--line); color:var(--ink)}
+.btn:hover{opacity:.88}
+@media (max-width:860px){ .hero .wrap{grid-template-columns:1fr; gap:2rem} .hero h1{max-width:none} }
+
+/* Map */
+.map{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:.75rem}
+.map svg{display:block; width:100%; height:auto}
+.legend{display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin:.6rem .25rem .1rem; font-size:.85rem; color:var(--muted); list-style:none; padding:0}
+.legend li{display:flex; align-items:center; gap:.4rem}
+.sw{display:inline-block; width:18px; height:0; border-top:3px solid}
+.sw.old{border-top:2px dashed var(--route-old)}
+.sw.new{border-color:var(--route)}
+.sw.nogo{height:10px; border:1.5px solid var(--nogo); background:repeating-linear-gradient(45deg,transparent 0 3px,color-mix(in srgb,var(--nogo) 45%,transparent) 3px 4px)}
+.sw.comm{height:10px; width:10px; border:1.5px dashed var(--comm); border-radius:50%}
+
+.grid-line{stroke:var(--grid); stroke-width:1}
+.contour{fill:none; stroke:var(--contour); stroke-width:1.2}
+.nogo-zone{fill:url(#hatch); stroke:var(--nogo); stroke-width:1.5}
+.comm-zone{fill:color-mix(in srgb,var(--comm) 8%,transparent); stroke:var(--comm); stroke-width:1.4; stroke-dasharray:5 5}
+.route-old{fill:none; stroke:var(--route-old); stroke-width:2.5; stroke-dasharray:7 6; stroke-linecap:round}
+.route-new{fill:none; stroke:var(--route); stroke-width:3.5; stroke-linecap:round; stroke-linejoin:round}
+.pin{fill:var(--surface); stroke:var(--ink); stroke-width:2}
+.pin-label{font:600 13px var(--head); fill:var(--ink)}
+.zone-label{font:600 12px var(--body); fill:var(--nogo)}
+.comm-label{font:600 12px var(--body); fill:var(--comm)}
+.note rect{fill:var(--surface); stroke:var(--route); stroke-width:1.2}
+.note text{font:600 12px var(--body); fill:var(--ink)}
+
+/* Replanning sequence: plays once on load */
+.route-old{stroke-dashoffset:0; animation:dim .6s 2.4s forwards}
+.new-zone{opacity:0; animation:appear .5s 1.4s forwards}
+.route-new-draw{stroke-dasharray:1 1; stroke-dashoffset:1; animation:draw 1.8s 2.7s ease-in-out forwards}
+.note{opacity:0; animation:appear .5s 4.5s forwards}
+@keyframes appear{to{opacity:1}}
+@keyframes dim{to{opacity:.35}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .route-old,.new-zone,.route-new-draw,.note{animation:none}
+  .new-zone,.note{opacity:1} .route-old{opacity:.35} .route-new-draw{stroke-dashoffset:0}
+}
+
+/* Sections */
+section{padding:3.5rem 0; border-bottom:1px solid var(--line)}
+section h2{font-size:1.9rem; font-weight:700; margin-bottom:1.25rem}
+.prose{max-width:66ch}
+.prose p{margin:0 0 1rem}
+.contrib{display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem 2rem; margin:2rem 0 0; padding:0}
+.contrib div{border-top:3px solid var(--route); padding-top:.9rem}
+.contrib dt{font:600 1.15rem/1.25 var(--head); margin-bottom:.4rem}
+.contrib dd{margin:0; color:var(--muted); font-size:.98rem}
+@media (max-width:760px){ .contrib{grid-template-columns:1fr} }
+
+.people{display:grid; grid-template-columns:1fr 1fr; gap:2rem 3rem}
+.people h3{font-size:1.15rem; font-weight:600; color:var(--muted); margin-bottom:.75rem}
+.people ul{list-style:none; margin:0; padding:0}
+.people li{padding:.65rem 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap}
+.people li:first-child{border-top:1px solid var(--line)}
+.people .name{font-weight:600}
+.people .role{color:var(--muted)}
+.placeholder{color:var(--muted); font-style:italic; font-weight:400}
+@media (max-width:640px){ .people{grid-template-columns:1fr} }
+
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:8px; background:var(--surface)}
+table{width:100%; border-collapse:collapse; min-width:30rem}
+th,td{text-align:left; padding:.8rem 1rem; border-bottom:1px solid var(--line)}
+th{font:600 .95rem var(--head); color:var(--muted); background:color-mix(in srgb,var(--paper) 60%,var(--surface))}
+tr:last-child td{border-bottom:0}
+td.date{font-variant-numeric:tabular-nums; white-space:nowrap}
+.na{color:var(--muted)}
+tr.is-next td{background:var(--next-bg)}
+.tag{display:inline-block; margin-left:.5rem; padding:.05rem .45rem; border-radius:4px; font-size:.8rem; font-weight:600; background:var(--route); color:#1C2836; vertical-align:1px}
+.split{display:grid; grid-template-columns:1fr 1fr; gap:2.5rem}
+@media (max-width:860px){ .split{grid-template-columns:1fr} }
+
+footer{padding:2rem 0 2.5rem; color:var(--muted); font-size:.92rem}
+footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem 2rem}
 </style>
 </head>
 <body>
-<nav aria-label="Main"><div class="wrap">
-<b>ALPAR</b><a href="#description">Description</a><a href="#team">Team</a><a href="#reports">Reports</a><a href="#backlog">Backlog</a>
-</div></nav>
 
-<main class="wrap">
-<header>
-<h1>Safe Route Planning and Route Justification for Mission-Critical Systems</h1>
-<p class="sub">Team ALPAR (Agent-Based Limit-Aware Planning and Adaptive Routing) · CMPE 491 Senior Design Project I · Fall 2026-2027</p>
+<nav class="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#top">ALPAR</a>
+    <ul>
+      <li><a href="#description">Description</a></li>
+      <li><a href="#team">Team</a></li>
+      <li><a href="#deliverables">Reports</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <h1>Safe route planning and route justification for mission-critical systems</h1>
+      <p class="lede"><strong>Agent-Based Limit-Aware Planning and Adaptive Routing.</strong> An agentic AI planner for UAVs and UGVs that replans when conditions change and explains why it chose the route it did.</p>
+      <p class="lede">CMPE 491 Senior Design Project I, Fall 2026–2027, TED University.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="reports/proposal.pdf">Read the proposal</a>
+        <a class="btn btn-ghost" href="#description">About the project</a>
+      </div>
+    </div>
+
+    <figure class="map" style="margin:0">
+      <svg viewBox="0 0 520 380" role="img" aria-labelledby="mapTitle mapDesc">
+        <title id="mapTitle">Replanning example</title>
+        <desc id="mapDesc">A planned route from start to goal is blocked by a new no-go zone. The system computes a new route that avoids the zone and stays inside communication coverage.</desc>
+        <defs>
+          <pattern id="gridp" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M20 0H0V20" fill="none" class="grid-line"/>
+          </pattern>
+          <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="7" height="7" fill="var(--nogo)" opacity=".06"/>
+            <line x1="0" y1="0" x2="0" y2="7" stroke="var(--nogo)" stroke-width="1.6" opacity=".5"/>
+          </pattern>
+        </defs>
+        <rect width="520" height="380" fill="url(#gridp)"/>
+
+        <!-- terrain contours -->
+        <path class="contour" d="M90 120c40-50 130-55 160-10s-20 90-80 85-110-25-80-75z"/>
+        <path class="contour" d="M115 122c25-30 90-32 108-5s-14 55-54 52-74-17-54-47z"/>
+        <path class="contour" d="M330 300c30-35 110-40 140 0s-30 70-80 62-85-27-60-62z"/>
+        <path class="contour" d="M20 250c60-10 110 10 150 50"/>
+
+        <!-- communication coverage -->
+        <circle class="comm-zone" cx="390" cy="170" r="150"/>
+        <text class="comm-label" x="352" y="338">Comm range</text>
+
+        <!-- known no-go zone -->
+        <polygon class="nogo-zone" points="150,170 225,150 245,215 185,245 140,220"/>
+
+        <!-- initial plan -->
+        <path class="route-old" d="M50 335C120 300 200 270 270 215S400 100 470 55"/>
+
+        <!-- new no-go zone appears -->
+        <g class="new-zone">
+          <polygon class="nogo-zone" points="250,170 315,150 340,210 300,250 245,232"/>
+          <text class="zone-label" x="262" y="140">New no-go zone</text>
+        </g>
+
+        <!-- replanned route -->
+        <path class="route-new route-new-draw" pathLength="1" d="M50 335C130 320 230 300 330 280S420 225 440 170 465 80 470 55"/>
+
+        <!-- start / goal -->
+        <circle class="pin" cx="50" cy="335" r="8"/>
+        <text class="pin-label" x="30" y="362">Start</text>
+        <circle class="pin" cx="470" cy="55" r="8"/>
+        <path d="M466 55h8M470 51v8" stroke="var(--ink)" stroke-width="2"/>
+        <text class="pin-label" x="446" y="34">Goal</text>
+
+        <!-- route justification -->
+        <g class="note">
+          <rect x="22" y="22" width="232" height="50" rx="6"/>
+          <text x="34" y="43">Why this route: avoids the new zone</text>
+          <text x="34" y="61">and keeps communication coverage.</text>
+        </g>
+      </svg>
+      <ul class="legend">
+        <li><span class="sw old"></span>Initial plan</li>
+        <li><span class="sw new"></span>Replanned route</li>
+        <li><span class="sw nogo"></span>No-go zone</li>
+        <li><span class="sw comm"></span>Communication coverage</li>
+      </ul>
+    </figure>
+  </div>
 </header>
 
-<section id="description">
-<h2>Project description</h2>
-<p>Mission-critical systems such as unmanned aerial vehicles (UAVs) and unmanned ground vehicles (UGVs) operate in uncertain and constantly changing field conditions. Classic route planning algorithms compute a route once under static assumptions, so they fall short when a new obstacle appears, communication is lost, or the energy budget shrinks.</p>
-<p>This project develops an agentic AI based decision and planning architecture that replans safely and instantly when conditions change. It also reports why the chosen route was preferred over its alternatives, using a language model, so that operators can trust the system's decisions. The expected contributions are real-time replanning in crisis scenarios (risk exposure, no-go zone violations), explainable AI for route choice, and dynamic weighting based on a safe energy reserve and uninterrupted communication quality.</p>
-</section>
+<main>
+  <section id="description">
+    <div class="wrap">
+      <h2>Project description</h2>
+      <div class="prose">
+        <p>Mission-critical systems such as unmanned aerial vehicles (UAVs) and unmanned ground vehicles (UGVs) operate in uncertain and constantly changing field conditions. Classic route planning algorithms compute a route once under static assumptions, so they fall short when a new obstacle appears, communication is lost, or the energy budget shrinks.</p>
+        <p>This project develops an agentic AI based decision and planning architecture that replans safely and instantly when conditions change. It also reports why the chosen route was preferred over its alternatives, using a language model, so that operators can trust the system's decisions.</p>
+      </div>
+      <dl class="contrib">
+        <div>
+          <dt>Real-time replanning</dt>
+          <dd>Safe replanning in crisis scenarios such as rising risk exposure or no-go zone violations.</dd>
+        </div>
+        <div>
+          <dt>Explainable route choice</dt>
+          <dd>A language model explains why the selected route was preferred over its alternatives.</dd>
+        </div>
+        <div>
+          <dt>Dynamic weighting</dt>
+          <dd>Route costs adapt to a safe energy reserve and uninterrupted communication quality.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
 
-<section id="team">
-<h2>Team</h2>
-<ul>
-<li>Beren ÖZBEK</li>
-<li>Bernur GİRAZ</li>
-<li>Nehir OYMAK</li>
-</ul>
-<h2 style="margin-top:28px">Supervisor and jury</h2>
-<ul>
-<li>Supervisor: <span class="muted">Dr. Ali BERKOL</span></li>
-<li>Jury member 1: <span class="muted">Prof. Dr. Tolga Kurtuluş ÇAPIN</span></li>
-<li>Jury member 2: <span class="muted">[Jury member name]</span></li>
-</ul>
-</section>
+  <section id="team">
+    <div class="wrap">
+      <h2>Team</h2>
+      <div class="people">
+        <div>
+          <h3>Students</h3>
+          <ul>
+            <li><span class="name">Beren Özbek</span></li>
+            <li><span class="name">Bernur Giraz</span></li>
+            <li><span class="name">Nehir Oymak</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Supervisor and jury</h3>
+          <ul>
+            <li><span class="name">Dr. Ali Berkol</span><span class="role">Supervisor</span></li>
+            <li><span class="name">Prof. Dr. Tolga Kurtuluş Çapın</span><span class="role">Jury member</span></li>
+            <li><span class="name placeholder">To be announced</span><span class="role">Jury member</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section id="reports">
-<h2>Reports</h2>
-<div class="scroll"><table>
-<thead><tr><th>Report</th><th>Due</th><th>File</th></tr></thead>
-<tbody>
-<tr><td>Project Proposal</td><td>16.10.2026</td><td><a href="reports/proposal.pdf">PDF</a></td></tr>
-<tr><td>Project Specifications Report</td><td>23.10.2026</td><td class="muted">Not yet available</td></tr>
-<tr><td>Analysis Report</td><td>20.11.2026</td><td class="muted">Not yet available</td></tr>
-<tr><td>High-Level Design Report</td><td>31.12.2026</td><td class="muted">Not yet available</td></tr>
-</tbody></table></div>
-</section>
-
-<section id="backlog">
-<h2>TODO / Backlog</h2>
-<div class="scroll"><table>
-<thead><tr><th>Version</th><th>Due</th><th>File</th></tr></thead>
-<tbody>
-<tr><td>Backlog v1</td><td>23.10.2026</td><td class="muted">Not yet available</td></tr>
-<tr><td>Backlog v2</td><td>20.11.2026</td><td class="muted">Not yet available</td></tr>
-<tr><td>Backlog v3</td><td>31.12.2026</td><td class="muted">Not yet available</td></tr>
-</tbody></table></div>
-</section>
+  <section id="deliverables">
+    <div class="wrap split">
+      <div id="reports">
+        <h2>Reports</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Report</th><th>Due</th><th>File</th></tr></thead>
+            <tbody>
+              <tr data-due="2026-10-16"><td>Project Proposal</td><td class="date">16.10.2026</td><td><a href="reports/proposal.pdf">PDF</a></td></tr>
+              <tr data-due="2026-10-23"><td>Project Specifications Report</td><td class="date">23.10.2026</td><td class="na">Not yet available</td></tr>
+              <tr data-due="2026-11-20"><td>Analysis Report</td><td class="date">20.11.2026</td><td class="na">Not yet available</td></tr>
+              <tr data-due="2026-12-31"><td>High-Level Design Report</td><td class="date">31.12.2026</td><td class="na">Not yet available</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="backlog">
+        <h2>Backlog</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Version</th><th>Due</th><th>File</th></tr></thead>
+            <tbody>
+              <tr data-due="2026-10-23"><td>Backlog v1</td><td class="date">23.10.2026</td><td class="na">Not yet available</td></tr>
+              <tr data-due="2026-11-20"><td>Backlog v2</td><td class="date">20.11.2026</td><td class="na">Not yet available</td></tr>
+              <tr data-due="2026-12-31"><td>Backlog v3</td><td class="date">31.12.2026</td><td class="na">Not yet available</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer><div class="wrap">TED University · CMPE 491 Senior Design Project I · Fall 2026-2027</div></footer>
+<footer>
+  <div class="wrap">
+    <span>Team ALPAR, TED University</span>
+    <span>CMPE 491 Senior Design Project I, Fall 2026–2027</span>
+  </div>
+</footer>
+
+<script>
+// Highlight the next upcoming deadline(s) in the Reports and Backlog tables.
+(function(){
+  var today = new Date(); today.setHours(0,0,0,0);
+  var rows = Array.prototype.slice.call(document.querySelectorAll('tr[data-due]'));
+  var upcoming = rows.map(function(r){ return new Date(r.dataset.due + 'T00:00:00'); })
+                     .filter(function(d){ return d >= today; })
+                     .sort(function(a,b){ return a - b; });
+  if (!upcoming.length) return;
+  var next = upcoming[0].getTime();
+  rows.forEach(function(r){
+    if (new Date(r.dataset.due + 'T00:00:00').getTime() === next){
+      r.classList.add('is-next');
+      var tag = document.createElement('span');
+      tag.className = 'tag'; tag.textContent = 'Next';
+      r.cells[0].appendChild(tag);
+    }
+  });
+})();
+</script>
 </body>
 </html>
